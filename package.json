@@ -1,5 +1,5 @@
 {
-  "name": "svelte-meetup",
+  "name": "svelte-meetus",
   "version": "1.0.0",
   "scripts": {
     "build": "rollup -c",
