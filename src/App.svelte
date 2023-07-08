@@ -1,88 +1,61 @@
 <script>
-    import Header from "./UI/Header.svelte";
-    import MeetupGrid from "./Meetups/MeetupGrid.svelte";
-    import Button from "./UI/Button.svelte";
-    import EditMeetup from "./Meetups/EditMeetup.svelte";
+  import Header from "./UI/Header.svelte";
+  import MeetupGrid from "./Meetups/MeetupGrid.svelte";
+  import Button from "./UI/Button.svelte";
+  import EditMeetup from "./Meetups/EditMeetup.svelte";
+  import meetupsStore from "./Meetups/meetups-store";
+  import MeetupDetail from "./Meetups/MeetupDetail.svelte";
 
-    let editMode = null
+  let editMode = null;
+  let page = "overview";
+  let pageData = {};
+  let editingId = null;
 
-    let meetups = [
-        {
-            id: 'm1',
-            title: 'Coding Bootcamp',
-            subtitle: 'Learn to code in 2 hours',
-            description: 'This is the meeting description.',
-            imageUrl: 'https://images.unsplash.com/photo-1684528905602-236109cf45c5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=387&q=80',
-            address: 'HCM City',
-            contactEmail: 'code@test.com',
-            isFavorite: false
-        },
-        {
-            id: 'm2',
-            title: 'Another Coding Bootcamp',
-            subtitle: 'Learn to code in 2 hours',
-            description: 'This is the meeting description.',
-            imageUrl: 'https://images.unsplash.com/photo-1684528905602-236109cf45c5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=387&q=80',
-            address: 'HCM City',
-            contactEmail: 'code@test.com',
-            isFavorite: false
-        }
-    ]
+  function saveMeetup(event) {
+    editMode = null;
+    editingId = null;
+  }
 
-    function addMeetup(event) {
-        const newMeetup = {
-            id: Math.random().toString(),
-            title: event.detail.title, 
-            subtitle: event.detail.subtitle, 
-            description: event.detail.description, 
-            imageUrl: event.detail.imageUrl, 
-            address: event.detail.address,
-            contactEmail: event.detail.email
-        }     
-        
-        meetups = [newMeetup, ...meetups]
-        editMode = null
-    }
+  function cancelEdit() {
+    editMode = null;
+    editingId = null;
+  }
 
-    function toggleFavorite(event) {
-        const id = event.detail
-        const updatedMeetup = {...meetups.find(m => m.id === id)}
-        updatedMeetup.isFavorite = !updatedMeetup.isFavorite
+  function showDetails(event) {
+    page = "details";
+    pageData.id = event.detail;
+  }
 
-        const meetupIndex = meetups.findIndex(m => m.id === id)
-        const newMeetups = [...meetups]
-        newMeetups[meetupIndex] = updatedMeetup
-        meetups = newMeetups
-    }
+  function closeDetails() {
+    page = "overview";
+    pageData = {};
+  }
 
-    function cancelEdit() {
-        editMode = null
-    }
+  function startEdit(event) {
+    editMode = "edit";
+    editingId = event.detail;
+  }
 </script>
 
 <Header />
 <main>
-    <div class="meetup-controls">
-
-    </div>
-
-    <Button on:click="{() => editMode = "add"}">New Meetup</Button>
-    {#if editMode === "add"}
-        <EditMeetup on:save="{addMeetup}" on:cancel={cancelEdit} />
+  {#if page === "overview"}
+    {#if editMode === "edit"}
+      <EditMeetup on:save={saveMeetup} on:cancel={cancelEdit} id={editingId} />
     {/if}
-    <MeetupGrid {meetups} on:togglefavorite="{toggleFavorite}" />
-
+    <MeetupGrid
+      meetups={$meetupsStore}
+      on:showdetails={showDetails}
+      on:edit={startEdit}
+      on:add={() => (editMode = "edit")}
+    />
+  {:else}
+    <MeetupDetail id={pageData.id} on:close={closeDetails} />
+  {/if}
 </main>
 
-
 <style>
-    main {
-        margin-top: 5rem;
-    }
-
-    .meetup-controls {
-        margin: 1rem;
-
-    }
+  main {
+    margin-top: 5rem;
+  }
 </style>
-
